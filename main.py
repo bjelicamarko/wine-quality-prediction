@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.svm import SVC
 from sklearn import metrics
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.linear_model import LinearRegression
 
 def dataset_info(df):
     df.info()
@@ -50,10 +52,17 @@ def main():
     # normalization
     #xtrain, xtest, ytrain, ytest = train_test_validation_with_scaling(features, target, MinMaxScaler())
 
-    svm = SVC(kernel='rbf')
-    svm.fit(xtrain, ytrain)
+    models = [SVC(kernel='rbf'), GradientBoostingRegressor(), LinearRegression()]
+    for i in range(len(models)):
+        models[i].fit(xtrain, ytrain)
+        print(f'{models[i]} : ')
+        print('Training Accuracy : ', metrics.roc_auc_score(ytrain, models[i].predict(xtrain)))
+        print('Validation Accuracy : ', metrics.roc_auc_score(
+            ytest, models[i].predict(xtest)))
+        print()
+  
 
-    print(metrics.classification_report(ytest, svm.predict(xtest)))
+    # print(metrics.classification_report(ytest, svm.predict(xtest)))
 
 if __name__ == "__main__":
     main()
