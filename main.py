@@ -15,6 +15,11 @@ from util import *
 import warnings
 warnings.filterwarnings('once')
 
+def make_correlation_matrix(df):
+    plt.figure(figsize=(12, 12))
+    sb.heatmap(df.corr() > 0.7, annot=True, cbar=False)
+    plt.show()
+
 def train_test_validation_with_scaling(features, target, scaler):
     xtrain, xtest, ytrain, ytest = train_test_split(features, target, test_size=0.2, random_state=40)
 
@@ -43,15 +48,15 @@ def regression(xtrain, xtest, ytrain, ytest, regression_models):
         print()
 
 def main():
-    df = pd.read_csv('prepared_dataset.csv')
-    features = df.drop(['quality', 'best quality'], axis=1)
+    df = pd.read_csv('dataset.csv')
+    features = df.drop(['quality'], axis=1)
     target = df['quality']
     
     # standardization
     xtrain, xtest, ytrain, ytest = train_test_validation_with_scaling(features, target, StandardScaler())
 
     # normalization
-    #xtrain, xtest, ytrain, ytest = train_test_validation_with_scaling(features, target, MinMaxScaler())
+    # xtrain, xtest, ytrain, ytest = train_test_validation_with_scaling(features, target, MinMaxScaler())
 
     regression_models = [GradientBoostingRegressor(), LinearRegression(), Ridge()]
     regression(xtrain, xtest, ytrain, ytest, regression_models)
