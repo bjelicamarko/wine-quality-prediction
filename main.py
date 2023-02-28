@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
@@ -52,14 +53,22 @@ def classification(xtrain, xtest, ytrain, ytest, classification_models, list_of_
 
         print()
 
-def regression(xtrain, xtest, ytrain, ytest, regression_models):
+def regression(xtrain, xtest, ytrain, ytest, regression_models, list_of_parameters):
     for i in range(len(regression_models)):
         print(f'{regression_models[i]} : ')
 
-        regression_models[i].fit(xtrain, ytrain)
+        gs = GridSearchCV(regression_models[i], list_of_parameters[i], n_jobs=-1, cv=5, scoring='neg_mean_squared_error')
+        gs.fit(xtrain, ytrain)
 
+        print("TRAINING")
+        print("Best estimator from gridsearch: {}".format(gs.best_estimator_))
+        print("Best parameters from gridsearch: {}".format(gs.best_params_))
+        print("CV score={}".format(gs.best_score_))
+
+        print("TESTING")
         print("RMSE: " + 
-            str(metrics.mean_squared_error(ytest, regression_models[i].predict(xtest),  squared=True)))
+            str(metrics.mean_squared_error(ytest, gs.best_estimator_.predict(xtest), squared=True)))
+
         print()
 
 def main():
@@ -73,29 +82,29 @@ def main():
     # normalization
     # xtrain, xtest, ytrain, ytest = train_test_validation_with_scaling(features, target, MinMaxScaler())
 
-    # regression_models = [
-    #     GradientBoostingRegressor(), 
-    #     LinearRegression(), 
-    #     Ridge()
-    # ]
-    # list_of_parameters = [
-    #     {},
-    #     {},
-    #     {}
-    # ]
-    # regression(xtrain, xtest, ytrain, ytest, regression_models)
-  
-    classification_models = [
-        SVC(), 
-        RandomForestClassifier(), 
-        GaussianNB()
+    regression_models = [
+        GradientBoostingRegressor(), 
+        LinearRegression(), 
+        Ridge()
     ]
     list_of_parameters = [
-        {'kernel': ['rbf'], 'C': [1.0, 2.0, 3.0], 'degree': [1, 2, 3]}, 
-        {'n_estimators': [100, 200, 300]}, 
-        {} 
+        {'learning_rate': [0.05, 0.1, 1, 10], 'max_depth': [1, 3, 5, 7, 9], 'n_estimators': [50, 150, 200, 500]},
+        {},
+        {'alpha': [1, 2, 3, 4, 5, 10, 15, 20, 50]}
     ]
-    classification(xtrain, xtest, ytrain, ytest, classification_models, list_of_parameters)
+    regression(xtrain, xtest, ytrain, ytest, regression_models, list_of_parameters)
+  
+    # classification_models = [
+    #     SVC(), 
+    #     RandomForestClassifier(), 
+    #     GaussianNB()
+    # ]
+    # list_of_parameters = [
+    #     {'kernel': ['rbf'], 'C': [1.0, 2.0, 3.0], 'degree': [1, 2, 3]}, 
+    #     {'n_estimators': [100, 200, 300]}, 
+    #     {} 
+    # ]
+    # classification(xtrain, xtest, ytrain, ytest, classification_models, list_of_parameters)
 
 if __name__ == "__main__":
     main()
