@@ -18,6 +18,8 @@ from keras.wrappers.scikit_learn import KerasClassifier
 
 from util import *
 
+import sys
+
 import time
 import warnings
 warnings.filterwarnings('ignore')
@@ -108,49 +110,55 @@ def neural_network(xtrain, xtest, ytrain, ytest, parameters):
 
     print()
 
-def main():
-    df = pd.read_csv('dataset.csv')
+def main(argv):
+    df = pd.read_csv(argv[1])
     features = df.drop(['quality'], axis=1)
     target = df['quality']
     
-    # standardization
-    xtrain, xtest, ytrain, ytest = train_test_validation_with_scaling(features, target, StandardScaler())
+    scaler = None
+    if argv[2] == 'stan':
+        scaler = StandardScaler()
+    elif argv[2] == 'norm':
+        scaler = MinMaxScaler()
+    else:
+        return
 
-    # normalization
-    # xtrain, xtest, ytrain, ytest = train_test_validation_with_scaling(features, target, MinMaxScaler())
+    xtrain, xtest, ytrain, ytest = train_test_validation_with_scaling(features, target, scaler)
 
-    regression_models = [
-        GradientBoostingRegressor(), 
-        LinearRegression(), 
-        Ridge()
-    ]
-    list_of_parameters = [
-        {'learning_rate': [0.05, 0.1, 1, 10], 'max_depth': [1, 3, 5, 7, 9], 'n_estimators': [50, 150, 200, 500]},
-        {},
-        {'alpha': [1, 2, 3, 4, 5, 10, 15, 20, 50]}
-    ]
-    regression(xtrain, xtest, ytrain, ytest, regression_models, list_of_parameters)
+    if 'reg' in argv:
+        regression_models = [
+            GradientBoostingRegressor(), 
+            LinearRegression(), 
+            Ridge()
+        ]
+        list_of_parameters = [
+            {'learning_rate': [0.05, 0.1, 1, 10], 'max_depth': [1, 3, 5, 7, 9], 'n_estimators': [50, 150, 200, 500]},
+            {},
+            {'alpha': [1, 2, 3, 4, 5, 10, 15, 20, 50]}
+        ]
+        regression(xtrain, xtest, ytrain, ytest, regression_models, list_of_parameters)
   
-    classification_models = [
-        SVC(), 
-        RandomForestClassifier(), 
-        GaussianNB()
-    ]
-    list_of_parameters = [
-        {'kernel': ['rbf'], 'C': [1.0, 2.0, 3.0], 'degree': [1, 2, 3]}, 
-        {'n_estimators': [100, 200, 300]}, 
-        {} 
-    ]
-    classification(xtrain, xtest, ytrain, ytest, classification_models, list_of_parameters)
+    if 'cls' in argv:
+        classification_models = [
+            SVC(), 
+            RandomForestClassifier(), 
+            GaussianNB()
+        ]
+        list_of_parameters = [
+            {'kernel': ['rbf'], 'C': [1.0, 2.0, 3.0], 'degree': [1, 2, 3]}, 
+            {'n_estimators': [100, 200, 300]}, 
+            {} 
+        ]
+        classification(xtrain, xtest, ytrain, ytest, classification_models, list_of_parameters)
 
-    # parameters = {
-    #     'batch_size': [10,20,30],
-    #     'epochs': [10,20],
-    #     'Optimizer_Trial': ['adam', 'rmsprop'],
-    #     'Neurons_Trial': [5,10]
-    # }
-
-    # neural_network(xtrain, xtest, ytrain, ytest, parameters)
+    if 'ann' in argv:
+        parameters = {
+            'batch_size': [10,20,30],
+            'epochs': [10,20],
+            'Optimizer_Trial': ['adam', 'rmsprop'],
+            'Neurons_Trial': [5,10]
+        }
+        neural_network(xtrain, xtest, ytrain, ytest, parameters)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
