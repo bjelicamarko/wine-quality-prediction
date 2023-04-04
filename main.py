@@ -29,11 +29,12 @@ def make_correlation_matrix(df):
     sb.heatmap(df.corr() > 0.7, annot=True, cbar=False)
     plt.show()
 
-def train_test_validation_with_scaling(features, target, scaler):
+def train_test_validation_with_scaling(features, target, scaler = None):
     xtrain, xtest, ytrain, ytest = train_test_split(features, target, test_size=0.2, random_state=40)
 
-    xtrain = scaler.fit_transform(xtrain)
-    xtest = scaler.transform(xtest)
+    if scaler is not None:
+        xtrain = scaler.fit_transform(xtrain)
+        xtest = scaler.transform(xtest)
 
     return xtrain, xtest, ytrain, ytest
 
@@ -78,9 +79,9 @@ def regression(xtrain, xtest, ytrain, ytest, regression_models, list_of_paramete
 def create_ann_model(Optimizer_Trial, Neurons_Trial):
     classifier = Sequential()
 
-    classifier.add(Dense(units=Neurons_Trial, input_dim=11, kernel_initializer='uniform', activation='relu'))
+    classifier.add(Dense(units=Neurons_Trial, input_dim=13, kernel_initializer='uniform', activation='relu'))
     classifier.add(Dense(units=Neurons_Trial, kernel_initializer='uniform', activation='relu'))
-    classifier.add(Dense(units=7, kernel_initializer='uniform', activation='sigmoid'))
+    classifier.add(Dense(units=6, kernel_initializer='uniform', activation='sigmoid'))
     classifier.compile(optimizer=Optimizer_Trial, loss='categorical_crossentropy', metrics=['accuracy'])
 
     return classifier
@@ -120,8 +121,7 @@ def main(argv):
         scaler = StandardScaler()
     elif argv[2] == 'norm':
         scaler = MinMaxScaler()
-    else:
-        return
+   
 
     xtrain, xtest, ytrain, ytest = train_test_validation_with_scaling(features, target, scaler)
 
@@ -145,8 +145,9 @@ def main(argv):
             GaussianNB()
         ]
         list_of_parameters = [
-            {'kernel': ['rbf'], 'C': [1.0, 2.0, 3.0], 'degree': [1, 2, 3]}, 
-            {'n_estimators': [100, 200, 300]}, 
+            {'kernel': ['rbf'], 'C': [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 'degree': [1, 2, 3],
+            'gamma': [0.1, 1.0, 10.0, 'scale', 'auto']}, 
+            {'n_estimators': [100, 200, 300, 400, 500, 600, 700, 800]}, 
             {} 
         ]
         classification(xtrain, xtest, ytrain, ytest, classification_models, list_of_parameters)
